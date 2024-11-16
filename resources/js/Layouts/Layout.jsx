@@ -11,10 +11,13 @@ import {
     UsersIcon,
     XMarkIcon,
 } from '@heroicons/react/24/outline';
+import NavMenu from "../components/NavMenu.jsx";
+import TopNav from "../components/TopNav.jsx";
+import Footer from "../components/footer.jsx";
 
 const navigation = [
-    { name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-    { name: 'Team', href: '#', icon: UsersIcon, current: false },
+    { name: 'Dashboard', href: '/', icon: HomeIcon, current: true },
+    { name: 'Team', href: '/profiles', icon: UsersIcon, current: false },
     { name: 'Projects', href: '#', icon: FolderIcon, current: false },
     { name: 'Calendar', href: '#', icon: CalendarIcon, current: false },
     { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
@@ -29,7 +32,7 @@ export default function Layout({ children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     return (
         <>
-            <div>
+            <div className={"h-100"}>
                 <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 lg:hidden">
                     <DialogBackdrop
                         transition
@@ -88,7 +91,7 @@ export default function Layout({ children }) {
 
                 {/* Static sidebar for desktop */}
                 <div
-                    className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
+                    className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-indigo-800 lg:pb-4">
                     <div className="flex h-16 shrink-0 items-center justify-center">
                         <img
                             alt="Your Company"
@@ -103,7 +106,7 @@ export default function Layout({ children }) {
                                     <a
                                         href={item.href}
                                         className={classNames(
-                                            item.current ? 'bg-gray-800 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white',
+                                            item.current ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-indigo-600 hover:text-white',
                                             'group flex gap-x-3 rounded-md p-3 text-sm/6 font-semibold',
                                         )}
                                     >
@@ -135,14 +138,25 @@ export default function Layout({ children }) {
                 </div>
 
                 <main className="lg:pl-20">
-                    <div className="xl:pl-96">
-                        <div className="px-4 py-10 sm:px-6 lg:px-8 lg:py-6">{children}</div>
+                    <div className="xl:pl-72">
+                        <div className="flex flex-col h-100">
+                            <header>
+                                <TopNav />
+                            </header>
+                            <div className={"flex-grow  px-4 py-10 overflow-y-scroll sm:px-6 lg:px-8 lg:py-6"}>
+                                {children}
+                            </div>
+                            <footer>
+                                <Footer />
+                            </footer>
+                        </div>
                     </div>
                 </main>
 
                 <aside
-                    className="fixed inset-y-0 left-20 hidden w-96 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
+                    className="fixed  inset-y-0 left-20 hidden w-72 overflow-y-auto bg-gray-50 border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
                     {/* Secondary column (hidden on smaller screens) */}
+                    <NavMenu />
                 </aside>
             </div>
         </>
