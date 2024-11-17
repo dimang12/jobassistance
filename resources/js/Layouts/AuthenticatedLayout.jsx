@@ -1,11 +1,11 @@
-import { Link, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Dialog, DialogBackdrop, DialogPanel, TransitionChild} from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline/index.js";
 import TopNav from "@/components/TopNav.jsx";
 import Footer from "@/components/footer.jsx";
 import NavMenu from "@/components/NavMenu.jsx";
-import {navigationLinks as navigation} from "@/components/Menus/Links.Config.jsx";
+import {navigationLinks as navigation, subNavigationLinks} from "@/components/Menus/Links.Config.jsx";
 
 
 function classNames(...classes) {
@@ -16,9 +16,8 @@ function classNames(...classes) {
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
     const url = usePage().url;
+    const currentMainNav = subNavigationLinks.find(nav => nav.mainNav === url);
 
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false)
     return (
         <>
@@ -79,8 +78,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 </Dialog>
 
                 {/* Static sidebar for desktop */}
-                <div
-                    className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-indigo-800 lg:pb-4">
+                <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-indigo-800 lg:pb-4">
                     <div className="flex h-16 shrink-0 items-center justify-center">
                         <img
                             alt="Your Company"
@@ -108,8 +106,7 @@ export default function AuthenticatedLayout({ header, children }) {
                     </nav>
                 </div>
 
-                <div
-                    className="sticky top-0 z-40 flex items-center gap-x-6 bg-gray-900 px-4 py-4 shadow-sm sm:px-6 lg:hidden">
+                <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-gray-900 px-4 py-4 shadow-sm sm:px-6 lg:hidden">
                     <button type="button" onClick={() => setSidebarOpen(true)}
                             className="-m-2.5 p-2.5 text-gray-400 lg:hidden">
                         <span className="sr-only">Open sidebar</span>
@@ -145,7 +142,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 <aside
                     className="fixed  inset-y-0 left-20 hidden w-72 overflow-y-auto bg-gray-50 border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
                     {/* Secondary column (hidden on smaller screens) */}
-                    <NavMenu />
+                    <NavMenu navigation={currentMainNav}  />
                 </aside>
             </div>
         </>
