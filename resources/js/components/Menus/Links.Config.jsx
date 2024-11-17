@@ -14,3 +14,18 @@ export const navigationLinks = [
     { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
     { name: 'Reports', href: '#', icon: ChartPieIcon, current: false },
 ]
+
+export const subNavigationLinks = [
+    { mainNav: '/dashboard', children: [] },
+    { mainNav: '/profile', children: [
+        { name: 'Profile', href: '/profile', current: true },
+        { name: 'Settings', href: '/settings', current: false }
+    ]},
+    { mainNav: '/projects', children: [] },
+    { mainNav: '/calendar', children: [
+        { name: 'Applied Job', href: '/applied-job' },
+        { name: 'Prepare Interview', href: '/prepare-interview' }
+    ]},
+    { mainNav: '/documents', children: [] },
+    { mainNav: '/reports', children: [] }
+]
