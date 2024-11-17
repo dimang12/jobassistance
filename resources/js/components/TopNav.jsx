@@ -2,8 +2,11 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import {Link} from "@mui/material";
-
+import React from 'react';
+import ResponsiveNavLink from './NavLink';
+import {Link} from "@inertiajs/react";
+import Dropdown from "./Dropdown";
+import NavLink from '@/Components/NavLink';
 export default function TopNav() {
     return (
         <Disclosure as="nav" className="bg-white shadow">
@@ -105,23 +108,16 @@ export default function TopNav() {
                                     </a>
                                 </MenuItem>
                                 <MenuItem>
-                                    <a
-                                        href="#"
-                                        className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
-                                    >
-                                        Settings
-                                    </a>
-                                </MenuItem>
-                                <MenuItem>
-                                    <a
-                                        href="#"
-                                        className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none"
-                                    >
-                                        Sign out
-                                    </a>
+                                    <Link
+                                        href={route('logout')}
+                                        method="post"
+                                        className={'block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:outline-none'}>
+                                        Logout
+                                    </Link>
                                 </MenuItem>
                             </MenuItems>
                         </Menu>
+
                     </div>
                 </div>
             </div>
