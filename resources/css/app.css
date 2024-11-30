@@ -1,3 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.dhx_cal_data { border-left: var(--dhx-scheduler-default-border); }
+.dhx_cal_header { left: 0 !important;}
