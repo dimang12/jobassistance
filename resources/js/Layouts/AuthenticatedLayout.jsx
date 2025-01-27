@@ -15,8 +15,8 @@ function classNames(...classes) {
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-    const url = usePage().url;
-    const currentMainNav = subNavigationLinks.find(nav => nav.mainNav === url);
+    const path =window.location.pathname;
+    const currentMainNav = subNavigationLinks.find(nav => nav.mainNav === path);
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
     return (
@@ -93,7 +93,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     <a
                                         href={item.href}
                                         className={classNames(
-                                            (url === item.href) ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-indigo-600 hover:text-white',
+                                            (path === item.href) ? 'bg-indigo-600 text-white' : 'text-gray-300 hover:bg-indigo-600 hover:text-white',
                                             'group flex gap-x-3 rounded-md p-3 text-sm/6 font-semibold',
                                         )}
                                     >

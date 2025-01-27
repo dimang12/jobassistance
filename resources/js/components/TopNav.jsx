@@ -146,6 +146,9 @@ export default function TopNav() {
                     >
                         Projects
                     </DisclosureButton>
+                    <DisclosureButton>
+                        Courses
+                    </DisclosureButton>
                     <DisclosureButton
                         as="a"
                         href="#"
