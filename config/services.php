@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'openai' => [
+        'key' => env('CHATGPT_API_KEY'),
+    ],
+
 ];

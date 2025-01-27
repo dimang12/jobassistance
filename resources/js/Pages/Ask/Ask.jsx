@@ -1,15 +1,16 @@
 import React from 'react';
 import CalendarComponent from "@/components/Calendars/Calendar.jsx";
 import AuthenticatedLayout  from "@/Layouts/AuthenticatedLayout.jsx";
+import GPTComponent from "@/components/AI/GPT/GPTComponent.jsx";
 
-function Calendar() {
+function Ask() {
     return (
         <div className="bg-white shadow-lg rounded-lg overflow-hidden p-4">
             {/*  */}
-            <CalendarComponent />
+            <GPTComponent />
         </div>
     );
 }
 
-Calendar.layout = page => <AuthenticatedLayout>{page}</AuthenticatedLayout>;
-export default Calendar;
+Ask.layout = page => <AuthenticatedLayout>{page}</AuthenticatedLayout>;
+export default Ask;

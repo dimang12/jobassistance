@@ -1,19 +1,16 @@
 <?php
 
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\AskController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+    return Inertia::render('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -28,6 +25,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/calendar/save', [CalendarController::class, 'save']);
     Route::get('/calendar/events', [CalendarController::class, 'getEvents']);
     Route::post('/calendar/delete', [CalendarController::class, 'delete']);
+
+    // chat gpt routes
+    Route::get('/ask', [AskController::class, 'index'])->name('ask');
+    Route::post('/api/chatgpt/ask', [AskController::class, 'ask'])->name('api.chatgpt.ask');
+
+    // course routes
+    Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
 });
 
 require __DIR__.'/auth.php';
