@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use Inertia\Inertia;
@@ -15,9 +16,15 @@ class CourseController extends Controller
     {
         $courses = Course::leftJoin('course_category as cc', 'courses.id', '=', 'cc.course_id')
             ->leftJoin('categories as c', 'cc.category_id', '=', 'c.id')
-            ->select('courses.*', 'cc.category_id', 'c.name as category_name')
+            ->leftJoin('images as i', function($join) {
+                $join->on('courses.id', '=', 'i.course_id')
+                    ->where('i.is_default', '=', 1);
+            })
+            ->join('users as u', 'courses.user_id', '=', 'u.id')
+            ->select('courses.*', 'cc.category_id', 'c.name as category_name', 'i.path as image', 'u.name')
             ->get();
-        return Inertia::render('Courses/Course', ['courses' => $courses]);
+        $categories = Category::all();
+        return Inertia::render('Courses/Course', ['courses' => $courses, 'categories' => $categories]);
     }
 
     /**
@@ -36,12 +43,43 @@ class CourseController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
+            'category_id' => 'integer',
             'description' => 'nullable|string',
+            'status' => 'nullable|string',
+            'duration' => 'required|integer',
+            'rating' => 'nullable|numeric',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:4096', // 4MB max
         ]);
 
+        // add user_id to the data array
+        $data['user_id'] = auth()->user()->id;
+
         $course = Course::create($data);
+        // check if the image is uploaded
+        if ($course && $request->hasFile('image')) {
+            // loop through the images and save them
+            if ($request->hasFile('image')) {
+                $images = $request->file('image');
+                if (!is_array($images)) {
+                    $images = [$images];
+                }
+                foreach ($images as $image) {
+                    $name = time() . '.' . $image->getClientOriginalExtension();
+                    $destinationPath = public_path('/images');
+                    $image->move($destinationPath, $name);
+
+                    // save the image path in the images table
+                    $course->images()->create(['path' => $name]);
+                }
+            }
+        }
+
+        // if the $course is created successfully, insert the category_id into the course_category table
+        if ($course) {
+            $course->categories()->attach($data['category_id']);
+        }
 
         return response()->json(['message' => 'Course created successfully', 'course' => $course]);
     }
@@ -71,13 +109,56 @@ class CourseController extends Controller
     {
         $data = $request->validate([
             'title' => 'required|string|max:255',
+            'category_id' => 'nullable|integer',
             'description' => 'nullable|string',
+            'status' => 'nullable|string',
+            'duration' => 'required|integer',
+            'rating' => 'nullable|integer',
             'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'end_date' => 'required|date'
         ]);
+        // convert the $id to an integer
+        $id = (int)$id;
+
+        // add user_id to the data array
+        $data['user_id'] = auth()->user()->id;
 
         $course = Course::findOrFail($id);
-        $course->update($data);
+        if ($course) {
+            $course->update($data);
+            if (isset($data['category_id'])) {
+                $course->categories()->sync($data['category_id']);
+            }
+
+            // check if the image is uploaded
+            if ($request->hasFile('image')) {
+                // loop through the images and save them
+                $images = $request->file('image');
+                if (!is_array($images)) {
+                    $images = [$images];
+                }
+                foreach ($images as $image) {
+                    $name = time() . '.' . $image->getClientOriginalExtension();
+                    $destinationPath = public_path('/images/courses/');
+                    $image->move($destinationPath, $name);
+
+                    // unset all is_default flags
+                    $course->images()->update(['is_default' => 0]);
+                    // save the image path in the images table
+                    $course->images()->create(['path' => $name, 'is_default' => 1]);
+                }
+            }
+
+            // get the updated course
+            $course = Course::leftJoin('course_category as cc', 'courses.id', '=', 'cc.course_id')
+                ->join('users as u', 'courses.user_id', '=', 'u.id')
+                ->leftJoin('categories as c', 'cc.category_id', '=', 'c.id')
+                ->leftJoin('images as i', 'courses.id', '=', 'i.course_id')
+                ->select('courses.*', 'cc.category_id', 'c.name as category_name', 'i.path as image', 'u.name')
+                ->where('courses.id', $id)
+                ->where('i.is_default', 1)
+                ->first();
+        }
 
         return response()->json(['message' => 'Course updated successfully', 'course' => $course]);
     }

@@ -32,6 +32,10 @@ Route::middleware('auth')->group(function () {
 
     // course routes
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
+    Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
+    Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
+    Route::post('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
+    Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
 });
 
 require __DIR__.'/auth.php';

@@ -19,4 +19,9 @@ class Category extends Model
         'created_by',
         'updated_by',
     ];
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'course_category', 'category_id', 'course_id');
+    }
 }
