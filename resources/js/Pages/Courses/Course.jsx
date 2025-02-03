@@ -109,7 +109,7 @@ export default function Course() {
             width: 150,
             renderCell: (params) => (
                 <div>
-                    <IconButton si onClick={() => handleEdit(params.row.id)}>
+                    <IconButton onClick={() => handleEdit(params.row.id)}>
                         <Edit className={'text-indigo-400'} fontSize={'small'} />
                     </IconButton>
                     <IconButton onClick={() => handleDelete(params.row.id)}>
