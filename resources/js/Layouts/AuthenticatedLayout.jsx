@@ -13,15 +13,14 @@ function classNames(...classes) {
 }
 
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AuthenticatedLayout({ header, children, navLinks }) {
     const user = usePage().props.auth.user;
     const path =window.location.pathname;
-    const currentMainNav = subNavigationLinks.find(nav => nav.mainNav === path);
 
     const [sidebarOpen, setSidebarOpen] = useState(false)
     return (
         <>
-            <div className={"h-100"}>
+            <div className={"h-full"}>
                 <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 lg:hidden">
                     <DialogBackdrop
                         transition
@@ -123,16 +122,16 @@ export default function AuthenticatedLayout({ header, children }) {
                     </a>
                 </div>
 
-                <main className="lg:pl-20">
-                    <div className="xl:pl-72">
-                        <div className="flex flex-col h-100">
-                            <header>
+                <main className="lg:pl-20 h-full">
+                    <div className="xl:pl-72 h-full">
+                        <div className="flex flex-col h-full">
+                            <header className={'border-b'}>
                                 <TopNav />
                             </header>
-                            <div className={"flex-grow  px-4 py-10 overflow-y-scroll sm:px-6 lg:px-8 lg:py-6"}>
+                            <div className={"flex-grow  px-4 py-10 bg-gray-100 overflow-y-scroll sm:px-6 lg:px-8 lg:py-6"}>
                                 {children}
                             </div>
-                            <footer>
+                            <footer className={'border-t'}>
                                 <Footer />
                             </footer>
                         </div>
@@ -140,9 +139,9 @@ export default function AuthenticatedLayout({ header, children }) {
                 </main>
 
                 <aside
-                    className="fixed  inset-y-0 left-20 hidden w-72 overflow-y-auto bg-gray-50 border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
+                    className="fixed  inset-y-0 left-20 hidden w-72 overflow-y-auto bg-gray-200 border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
                     {/* Secondary column (hidden on smaller screens) */}
-                    <NavMenu navigation={currentMainNav}  />
+                    <NavMenu navigation={navLinks}  />
                 </aside>
             </div>
         </>

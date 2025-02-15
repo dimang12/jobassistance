@@ -36,6 +36,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
     Route::post('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
+    // navigate to course detail page
+    Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
 });
 
 require __DIR__.'/auth.php';

@@ -89,8 +89,17 @@ class CourseController extends Controller
      */
     public function show($id)
     {
+        $courses = Course::leftJoin('course_category as cc', 'courses.id', '=', 'cc.course_id')
+            ->join('users as u', 'courses.user_id', '=', 'u.id')
+            ->leftJoin('images as i', 'courses.id', '=', 'i.course_id')
+            ->select('courses.*', 'i.path as image', 'u.name')
+            ->where('i.is_default', 1)
+            ->get();
         $course = Course::findOrFail($id);
-        return response()->json($course);
+        return Inertia::render('Courses/CourseVideo', [
+            'course' => $course,
+            'courses' => $courses
+        ]);
     }
 
     /**
