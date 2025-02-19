@@ -38,3 +38,4 @@ export const subNavigationLinks = [
     { mainNav: '/documents', children: [] },
     { mainNav: '/reports', children: [] }
 ]
+

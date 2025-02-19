@@ -1,14 +1,9 @@
-const teams = [
-    { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
-    { id: 2, name: 'Tailwind Labs', href: '#', initial: 'T', current: false },
-    { id: 3, name: 'Workcation', href: '#', initial: 'W', current: false },
-]
-
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
 export default function NavMenu({ navigation }) {
+
     return (
         <div className="flex grow flex-col gap-y-5 ">
             <nav className="flex flex-1 flex-col">
@@ -16,7 +11,7 @@ export default function NavMenu({ navigation }) {
                     <li>
                         <ul role="list" className="-mx-2 space-y-1">
 
-                        {navigation && navigation.children && navigation.children.map((item) => (
+                        {navigation  && navigation.map((item) => (
                                 <li key={item.name}>
                                     <a
                                         href={item.href}

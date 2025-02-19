@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\AskController;
+use App\Http\Controllers\CourseContentController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,13 @@ Route::middleware('auth')->group(function () {
     Route::put('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
     Route::post('/courses/{course}', [CourseController::class, 'update'])->name('courses.update');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->name('courses.destroy');
+    // navigate to course detail page
+    Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
+
+    // update course content
+    Route::put('/course/content/{courseContent}', [CourseContentController::class, 'update'])->name('course-content.update');
+    Route::post('/course/content', [CourseContentController::class, 'store'])->name('course-content.store');
+    Route::delete('/course/content/{courseContent}', [CourseContentController::class, 'destroy'])->name('course-content.destroy');
 });
 
 require __DIR__.'/auth.php';

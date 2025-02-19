@@ -1,6 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { useState } from 'react';
-import { Head, router, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { Head, usePage } from '@inertiajs/react';
 import { DataGrid } from '@mui/x-data-grid';
 
 import { IconButton, Tooltip } from '@mui/material';
@@ -23,13 +23,18 @@ export default function Course() {
     const [openAdd, setOpenAdd] = useState(false);
     const [openEdit, setOpenEdit] = useState(false);
     const [filteredCourses, setFilteredCourses] = useState(courses);
+    const [navLinks, setNavLinks] = useState([]);
+
+    useEffect(() => {
+        generateNavLinks(categories);
+    }, [categories]);
 
     const handleSearchChange = (event) => {
         const value = event.target.value.toLowerCase();
         setSearch(value);
         setFilteredCourses(courses.filter(course =>
             course.title.toLowerCase().includes(value) ||
-            course.category_name.toLowerCase().includes(value)
+            course?.category_name.toLowerCase().includes(value)
         ));
     };
 
@@ -43,7 +48,7 @@ export default function Course() {
         // update the rating
         data.rating = rating;
         axios.put(`/courses/${id}`, data)
-            .then(response => {
+            .then(() => {
                 setFilteredCourses(filteredCourses.map(course =>
                     course.id === id ? { ...course, rating } : course
                 ));
@@ -74,7 +79,16 @@ export default function Course() {
                 </Tooltip>
             ),
         },
-        { field: 'title', headerName: 'Name', width: 150 },
+        {
+            field: 'title',
+            headerName: 'Name',
+            width: 150,
+            renderCell: (params) => (
+                <a href={`/courses/${params.row.id}`} className="text-blue-500 hover:underline">
+                    {params.value}
+                </a>
+            ),
+        },
         { field: 'category_name', headerName: 'Categories', width: 150 },
         { field: 'status', headerName: 'Status', width: 100 },
         {
@@ -85,8 +99,8 @@ export default function Course() {
                 <div>
                     {[...Array(5)].map((_, index) => (
                         index < params.value ?
-                            <Star className={ (parseInt(params.value) === 5) ? 'text-amber-400' : ''} fontSize={'small'} key={index} onClick={() => handleRatingUpdate(params.row.id, index + 1)} /> :
-                            <StarBorder fontSize={'small'} key={index} onClick={() => handleRatingUpdate(params.row.id, index + 1)} />
+                            <Star className={ (parseInt(params.value) === 5) ? 'text-amber-400' : ''} fontSize="small" key={index} onClick={() => handleRatingUpdate(params.row.id, index + 1)} /> :
+                            <StarBorder fontSize="small" key={index} onClick={() => handleRatingUpdate(params.row.id, index + 1)} />
                     ))}
                 </div>
             ),
@@ -97,7 +111,7 @@ export default function Course() {
             width: 70,
             renderCell: (params) => (
                 <div>
-                    <AccessTime className={'text-gray-200'} fontSize={'small'} style={{ marginRight: 4 }} />
+                    <AccessTime className={'text-gray-200'} fontSize="small" style={{ marginRight: 4 }} />
                     {params.value}
                 </div>
             ),
@@ -109,11 +123,11 @@ export default function Course() {
             width: 150,
             renderCell: (params) => (
                 <div>
-                    <IconButton si onClick={() => handleEdit(params.row.id)}>
-                        <Edit className={'text-indigo-400'} fontSize={'small'} />
+                    <IconButton onClick={() => handleEdit(params.row.id)}>
+                        <Edit className={'text-indigo-400'} fontSize="small" />
                     </IconButton>
                     <IconButton onClick={() => handleDelete(params.row.id)}>
-                        <Delete className={'text-red-300'} fontSize={'small'} />
+                        <Delete className={'text-red-300'} fontSize="small" />
                     </IconButton>
                 </div>
             ),
@@ -160,9 +174,8 @@ export default function Course() {
 
     const confirmDelete = () => {
         axios.delete(`/courses/${courseToDelete}`)
-            .then(response => {
+            .then(() => {
                 setFilteredCourses(filteredCourses.filter(course => course.id !== courseToDelete));
-                console.log(`Course with id: ${courseToDelete} deleted successfully`);
             })
             .catch(error => {
                 if (error.response) {
@@ -210,6 +223,17 @@ export default function Course() {
             });
     };
 
+    const generateNavLinks = (categories) => {
+        const convertedNavLinks = categories.map(category => {
+            return {
+                name: category.name,
+                href: `/courses?category=${category.id}`,
+                current: false
+            };
+        });
+        setNavLinks(convertedNavLinks);
+    }
+
     return (
         <AuthenticatedLayout
             header={
@@ -217,6 +241,7 @@ export default function Course() {
                     Course
                 </h2>
             }
+            navLinks={navLinks}
         >
             <Head title="Course Page" />
 
