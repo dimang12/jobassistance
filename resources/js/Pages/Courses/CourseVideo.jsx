@@ -2,11 +2,14 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.jsx";
 import {  usePage } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import CourseVideoHeader from "@/Pages/Courses/CourseVideoHeader.jsx";
-import CourseVideoPlay from "@/Pages/Courses/CourseViedoPlay.jsx";
+import CourseContent from "@/Pages/Courses/CourseContent.jsx";
+import utils from "@/Libraries/utils.jsx";
 
 export default function CourseVideo() {
     const courses = usePage().props.courses;
     const course = usePage().props.course;
+    let courseContents = utils.buildTree(usePage().props.courseContents);
+
     const [navLinks, setNavLinks] = useState([]);
     const [breadcrumbs, setBreadcrumbs] = useState([]);
     const [video, setVideo] = useState(null);
@@ -48,10 +51,6 @@ export default function CourseVideo() {
             {
                 label: course.title,
                 href: `/courses/${course.id}`,
-            },
-            {
-                label: 'Video',
-                href: `/courses/${course.id}/video`,
             }
         ];
     };
@@ -66,7 +65,8 @@ export default function CourseVideo() {
                 onPrev={handlePrev}
                 onNext={handleNext}
             />
-            {video && <CourseVideoPlay video={video} className={'mt-4'} />}
+            {/*{video && <CourseVideoPlay video={video} className={'mt-4'} />}*/}
+            { <CourseContent course={course} contents={courseContents}></CourseContent> }
         </AuthenticatedLayout>
     );
 }

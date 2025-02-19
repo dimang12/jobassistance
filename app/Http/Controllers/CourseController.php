@@ -91,14 +91,24 @@ class CourseController extends Controller
     {
         $courses = Course::leftJoin('course_category as cc', 'courses.id', '=', 'cc.course_id')
             ->join('users as u', 'courses.user_id', '=', 'u.id')
+            ->leftJoin('categories as c', 'cc.category_id', '=', 'c.id')
             ->leftJoin('images as i', 'courses.id', '=', 'i.course_id')
-            ->select('courses.*', 'i.path as image', 'u.name')
+            ->select('courses.*', 'i.path as image', 'u.name', 'cc.category_id', 'c.name as category_name')
             ->where('i.is_default', 1)
             ->get();
         $course = Course::findOrFail($id);
+
+        // get course contents from course_contents table
+        $courseContents = $course->courseContents()
+            ->leftJoin('course_content_playeds as ccp', 'course_contents.id', '=', 'ccp.course_content_id')
+            ->select('course_contents.*', 'ccp.played_duration', 'ccp.is_completed')
+            ->orderBy('course_contents.ordering')
+            ->get();
+
         return Inertia::render('Courses/CourseVideo', [
             'course' => $course,
-            'courses' => $courses
+            'courses' => $courses,
+            'courseContents' => $courseContents
         ]);
     }
 
