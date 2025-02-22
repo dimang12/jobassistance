@@ -27,7 +27,7 @@ use Illuminate\Http\Request;
             'content_title' => 'required|string|max:255',
             'content_description' => 'required|string',
             'parent_id' => 'nullable|integer',
-            'ordering' => 'required|integer'
+            'ordering' => 'required|integer',
         ]);
 
         // check content_type
@@ -38,7 +38,9 @@ use Illuminate\Http\Request;
         // update the ordering of the course content
         // if the ordering equal or greater than data['ordering'] and has the same parent_id
         // increment the ordering by 1
-        $this->courseContentRepo->increaseOrdering($data['ordering'], $data['parent_id']);
+        if ($data['parent_id'] !== null) {
+            $this->courseContentRepo->increaseOrdering($data['ordering'], $data['parent_id']);
+        }
 
         // return the created course content
         return response()->json($this->courseContentRepo->getCourseContents());
