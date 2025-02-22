@@ -20,13 +20,20 @@ import Typography from '@mui/material/Typography';
 
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ClearIcon from '@mui/icons-material/Clear';
+import SaveIcon from '@mui/icons-material/Save';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import TextField from '@mui/material/TextField';
+import IconMenu from "@/components/Menus/IconMenu.jsx";
+import EditableListItemText from "@/Pages/Courses/EditableListItemText.jsx";
 import utils from "@/Libraries/utils.jsx";
 
 
 export default function CourseContent({ course, contents, className }) {
     const [open, setOpen] = React.useState(true);
+    const [openItems, setOpenItems] = React.useState({});
     const [hoveredItem, setHoveredItem] = React.useState(null);
     const [editItem, setEditItem] = React.useState(null);
     const [editTitle, setEditTitle] = React.useState('');
@@ -41,16 +48,28 @@ export default function CourseContent({ course, contents, className }) {
         setHoveredItem(null);
     };
 
-    const handleClick = () => {
-        setOpen(!open);
+    const handleClick = (id) => {
+        setOpenItems((prevOpenItems) => ({
+            ...prevOpenItems,
+            [id]: !prevOpenItems[id],
+        }));
     };
 
+    /**
+     * Edit a course content item
+     * @param item
+     */
     const handleEditClick = (item) => {
         setEditItem(item.id);
         setEditTitle(item.content_title);
         setEditDescription(item.content_description);
     };
 
+
+    /**
+     * Delete a course content item
+     * @param item - the current item
+     */
     const handleDeleteClick = (item) => {
         axios.delete(`/course/content/${item.id}`).then(() => {
             const updatedContents = deleteContent(item.id);
@@ -58,13 +77,32 @@ export default function CourseContent({ course, contents, className }) {
         })
     }
 
-    const handleAddClick = (item) => {
-        createNewContent(item);
+    /**
+     * Add a new course content item
+     * @param item - the current item
+     * @param isRoot - whether the item is a root item or a sub item
+     */
+    const handleAddClick = (item, isRoot = false) => {
+        const parentId = isRoot ? null : item.parent_id;
+        createNewContent(item, parentId);
     }
 
+    /**
+     * Add a new root course content item
+     * @param item - the current item
+     * @param isRoot - whether the item is a root item or a sub item
+     */
+    const handleAddRootClick = (item, isRoot = false) => {
+        const parentId = isRoot ? null : item.id;
+        createNewContent(item, parentId);
+    }
+
+    /**
+     * Save the updated title and description
+     * @returns {React.JSX.Element|null}
+     */
     const handleSaveClick = () => {
         // Save the updated title and description
-        console.log('Save clicked', editTitle, editDescription);
         axios.put(`/course/content/${editItem}`, {
             content_title: editTitle,
             content_description: editDescription
@@ -75,8 +113,23 @@ export default function CourseContent({ course, contents, className }) {
         setEditItem(null);
     };
 
+    const handleUpdateContent = (contentId, newContentTitle, newContentDescription) => {
+        // Save the updated title and description
+        axios.put(`/course/content/${contentId}`, {
+            content_title: newContentTitle,
+            content_description: newContentDescription
+        }).then(() => {
+            const updatedContents = updateContentsState(contentsState, contentId, newContentTitle, newContentDescription);
+            setContents(updatedContents);
+        });
+    }
+
     /**
      * update contents or its children
+     * @param contents - the contents state
+     * @param id - the id of the content to update
+     * @param newTitle - the new title
+     * @param newDescription - the new description
      * @returns {React.JSX.Element|null}
      */
     function updateContentsState(contents, id, newTitle, newDescription) {
@@ -120,15 +173,17 @@ export default function CourseContent({ course, contents, className }) {
 
     /**
      * Create a new course content item right after the current item
-     * @param curContent
+     * @param curContent - the current content item
+     * @param parentId - the parent id of the current content item
      * @returns {React.JSX.Element|null}
      */
-    const createNewContent = (curContent) => {
+    const createNewContent = (curContent, parentId) => {
+        debugger;
         axios.post(`/course/content`, {
             course_id: course.id,
             content_title: 'New Content',
             content_description: 'New Content Description',
-            parent_id: curContent?.parent_id,
+            parent_id: parentId,
             ordering: curContent?.ordering + 1,
         }).then((response) => {
             if (response.data) {
@@ -166,6 +221,18 @@ export default function CourseContent({ course, contents, className }) {
         }
     };
 
+    /**
+     * on useEffect, set the contents state
+     */
+    React.useEffect(() => {
+        // open the first item
+        if (contentsState && contentsState.length > 0) {
+            setOpenItems({
+                [contentsState[0].id]: true
+            });
+        }
+    }, [contentsState]);
+
     return (
         <div className={'flex gap-8 p-4 border rounded border-gray-200 mt-4 bg-white drop-shadow-sm ' + className}>
             <div className={'w-4/6'}>
@@ -177,12 +244,38 @@ export default function CourseContent({ course, contents, className }) {
                 >
                     {contentsState && contentsState.map((c) => (
                         <div key={c.id}>
-                            <ListItemButton onClick={handleClick}>
-                                <ListItemText primary={c.content_title} />
+                            <ListItemButton onClick={() => handleClick(c.id)}>
+                                <EditableListItemText
+                                    contentTitle={c.content_title}
+                                    contentDescription={c.content_description}
+                                    contentId={c.id}
+                                    onSave={(contentId, newContentTitle, newContentDescription ) => {
+                                        handleUpdateContent(contentId, newContentTitle, newContentDescription);
+                                    }}
+                                />
                                 {open ? <ExpandLess /> : <ExpandMore />}
+                                <IconMenu
+                                    iconButton={<MoreVertIcon />}
+                                    menuItems={[{
+                                        icon: <AddIcon />,
+                                        label: 'Add Root Content',
+                                        onClick: () => handleAddRootClick(c, true)
+                                    },
+                                    {
+                                        icon: <PlaylistAddIcon />,
+                                        label: 'Add Sub Content',
+                                        onClick: () => handleAddRootClick(c, false)
+                                    },
+                                    {
+                                        icon: <DeleteIcon />,
+                                        label: 'Delete Content',
+                                        onClick: () => handleDeleteClick(c)
+                                    }
+                                    ]}
+                                />
                             </ListItemButton>
                             {c.children && c.children.length > 0 && (
-                                <Collapse in={open} timeout="auto" unmountOnExit>
+                                <Collapse in={openItems[c.id]} timeout="auto" unmountOnExit>
                                     <Timeline>
                                         {c.children.map((child) => (
                                             <TimelineItem
@@ -201,7 +294,7 @@ export default function CourseContent({ course, contents, className }) {
                                                 </TimelineOppositeContent>
                                                 <TimelineSeparator>
                                                     <TimelineConnector />
-                                                    <TimelineDot color={getStatusColor(child.is_completed)} variant={(child.is_completed === 1) ? 'filled' : 'outlined'}>
+                                                    <TimelineDot color={getStatusColor(child.is_completed)} variant={(child?.is_completed === 1) ? 'filled' : 'outlined'}>
                                                         {getIcon(child.content_type)}
                                                     </TimelineDot>
                                                     <TimelineConnector />
@@ -228,28 +321,35 @@ export default function CourseContent({ course, contents, className }) {
                                                                 rows={2}
                                                                 sx={{ mt: 1 }}
                                                             />
-                                                            <button onClick={handleSaveClick} className="mt-2 py-1 px-3 rounded-full bg-indigo-50 text-blue-500">Save</button>
+                                                            <div className={'flex gap-2'}>
+                                                                <button onClick={handleSaveClick} className="flex items-center gap-2 mt-2 py-1 px-3 rounded-full bg-indigo-50 text-blue-500">
+                                                                    <SaveIcon fontSize="small"></SaveIcon> <span>Save</span>
+                                                                </button>
+                                                                <button onClick={() => setEditItem(null)} className="flex items-center gap-2 ml-2 mt-2 py-1 px-3 rounded-full bg-red-50 text-red-500">
+                                                                    <ClearIcon fontSize="small"></ClearIcon> Cancel
+                                                                </button>
+                                                            </div>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Typography variant="h6" component="span">
+                                                            <Typography variant="h6" component="span" onDoubleClick={() => handleEditClick(child)}>
                                                                 {child.content_title}
                                                             </Typography>
-                                                            <Typography color={'textSecondary'} sx={{ fontSize: 12 }}>{child.content_description}</Typography>
+                                                            <Typography onDoubleClick={()=> handleEditClick(child)} color={'textSecondary'} sx={{ fontSize: 12 }}>{child.content_description}</Typography>
                                                             {hoveredItem === child.id && (
                                                                 <>
                                                                     <AddIcon
-                                                                        fontSize={'x-small'}
+                                                                        fontSize="x-small"
                                                                         onClick={() => handleAddClick(child)}
                                                                         className="absolute cursor-pointer right-12 top-1/2 transform -translate-y-1/2"
                                                                     />
                                                                     <EditIcon
-                                                                        fontSize={'x-small'}
+                                                                        fontSize="x-small"
                                                                         onClick={() => handleEditClick(child)}
                                                                         className="absolute cursor-pointer right-6 top-1/2 transform -translate-y-1/2"
                                                                     />
                                                                     <DeleteIcon
-                                                                        fontSize={'x-small'}
+                                                                        fontSize="x-small"
                                                                         onClick={() => handleDeleteClick(child)}
                                                                         className="absolute cursor-pointer right-0 top-1/2 transform -translate-y-1/2"
                                                                     />
