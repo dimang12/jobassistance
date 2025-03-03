@@ -42,6 +42,7 @@ Route::middleware('auth')->group(function () {
 
     // update course content
     Route::put('/course/content/{courseContent}', [CourseContentController::class, 'update'])->name('course-content.update');
+    Route::post('/course/content/{courseContent}', [CourseContentController::class, 'update'])->name('course-content.update');
     Route::post('/course/content', [CourseContentController::class, 'store'])->name('course-content.store');
     Route::delete('/course/content/{courseContent}', [CourseContentController::class, 'destroy'])->name('course-content.destroy');
 });

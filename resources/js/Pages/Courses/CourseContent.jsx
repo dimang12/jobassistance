@@ -29,13 +29,18 @@ import TextField from '@mui/material/TextField';
 import IconMenu from "@/components/Menus/IconMenu.jsx";
 import EditableListItemText from "@/Pages/Courses/EditableListItemText.jsx";
 import utils from "@/Libraries/utils.jsx";
+import Drawer from "@/components/Drawer.jsx";
+import CourseContentEditForm from "@/Pages/Courses/CourseContentEditForm.jsx";
+import {IconButton} from "@mui/material";
 
 
 export default function CourseContent({ course, contents, className }) {
     const [open, setOpen] = React.useState(true);
     const [openItems, setOpenItems] = React.useState({});
+    const [editContentOpen, setEditContentOpen] = React.useState(false);
     const [hoveredItem, setHoveredItem] = React.useState(null);
-    const [editItem, setEditItem] = React.useState(null);
+    const [curEditContent, setCurEditContent] = React.useState(null);
+    const [editItemId, setEditItemId] = React.useState(null);
     const [editTitle, setEditTitle] = React.useState('');
     const [editDescription, setEditDescription] = React.useState('');
     const [contentsState, setContents] = React.useState(contents);
@@ -60,10 +65,20 @@ export default function CourseContent({ course, contents, className }) {
      * @param item
      */
     const handleEditClick = (item) => {
-        setEditItem(item.id);
+        setEditItemId(item.id);
         setEditTitle(item.content_title);
         setEditDescription(item.content_description);
     };
+
+    /**
+     * Open the edit content form
+     * @param item - the current item
+     * @return void
+     */
+    const handleEditContentClick = (item) => {
+        setCurEditContent(item);
+        setEditContentOpen(true);
+    }
 
 
     /**
@@ -103,26 +118,36 @@ export default function CourseContent({ course, contents, className }) {
      */
     const handleSaveClick = () => {
         // Save the updated title and description
-        axios.put(`/course/content/${editItem}`, {
+        axios.put(`/course/content/${editItemId}`, {
             content_title: editTitle,
             content_description: editDescription
         }).then(() => {
-            const updatedContents = updateContentsState(contentsState, editItem, editTitle, editDescription);
+            const updatedContents = updateContentsState(contentsState, editItemId, editTitle, editDescription);
             setContents(updatedContents);
         });
-        setEditItem(null);
+        setEditItemId(null);
     };
 
-    const handleUpdateContent = (contentId, newContentTitle, newContentDescription) => {
-        // Save the updated title and description
-        axios.put(`/course/content/${contentId}`, {
-            content_title: newContentTitle,
-            content_description: newContentDescription
+    const handleUpdateContent = (contentId, newContentTitle, newContentDescription, contentType, contentVideo) => {
+        const formData = new FormData();
+        formData.append('content_title', newContentTitle);
+        formData.append('content_description', newContentDescription);
+        formData.append('content_type', contentType ? contentType : 1);
+        // add course_id to the form data
+        formData.append('course_id', course.id);
+        if (contentVideo) {
+            formData.append('video', contentVideo);
+        }
+
+        axios.post(`/course/content/${contentId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
         }).then(() => {
             const updatedContents = updateContentsState(contentsState, contentId, newContentTitle, newContentDescription);
             setContents(updatedContents);
         });
-    }
+    };
 
     /**
      * update contents or its children
@@ -178,13 +203,13 @@ export default function CourseContent({ course, contents, className }) {
      * @returns {React.JSX.Element|null}
      */
     const createNewContent = (curContent, parentId) => {
-        debugger;
+        const ordering = (curContent?.ordering) ? (curContent.ordering + 1) : 1;
         axios.post(`/course/content`, {
             course_id: course.id,
             content_title: 'New Content',
             content_description: 'New Content Description',
             parent_id: parentId,
-            ordering: curContent?.ordering + 1,
+            ordering: ordering,
         }).then((response) => {
             if (response.data) {
                 const newContent = utils.buildTree(response.data);
@@ -236,15 +261,21 @@ export default function CourseContent({ course, contents, className }) {
     return (
         <div className={'flex gap-8 p-4 border rounded border-gray-200 mt-4 bg-white drop-shadow-sm ' + className}>
             <div className={'w-4/6'}>
-                <h1 className="text-2xl font-bold">{course?.title}</h1>
+                <h1 className="flex justify-between text-2xl font-bold">
+                    <span>{course?.title}</span>
+                    {contentsState && contentsState.length === 0 && (
+                        <IconButton onClick={() => handleAddRootClick(null, true)}>
+                            <AddIcon fontSize="small" />
+                        </IconButton>
+                    )}
+                </h1>
                 <List
                     sx={{ width: '100%'}}
-                    component="nav"
                     aria-labelledby="nested-list-subheader"
                 >
                     {contentsState && contentsState.map((c) => (
                         <div key={c.id}>
-                            <ListItemButton onClick={() => handleClick(c.id)}>
+                            <ListItemButton  onClick={(e) => {e.preventDefault();}}>
                                 <EditableListItemText
                                     contentTitle={c.content_title}
                                     contentDescription={c.content_description}
@@ -300,7 +331,7 @@ export default function CourseContent({ course, contents, className }) {
                                                     <TimelineConnector />
                                                 </TimelineSeparator>
                                                 <TimelineContent sx={{ py: '12px', px: 2, position: 'relative' }}>
-                                                    {editItem === child.id ? (
+                                                    {editItemId === child.id ? (
                                                         <>
                                                             <TextField
                                                                 value={editTitle}
@@ -325,7 +356,7 @@ export default function CourseContent({ course, contents, className }) {
                                                                 <button onClick={handleSaveClick} className="flex items-center gap-2 mt-2 py-1 px-3 rounded-full bg-indigo-50 text-blue-500">
                                                                     <SaveIcon fontSize="small"></SaveIcon> <span>Save</span>
                                                                 </button>
-                                                                <button onClick={() => setEditItem(null)} className="flex items-center gap-2 ml-2 mt-2 py-1 px-3 rounded-full bg-red-50 text-red-500">
+                                                                <button onClick={() => setEditItemId(null)} className="flex items-center gap-2 ml-2 mt-2 py-1 px-3 rounded-full bg-red-50 text-red-500">
                                                                     <ClearIcon fontSize="small"></ClearIcon> Cancel
                                                                 </button>
                                                             </div>
@@ -345,7 +376,7 @@ export default function CourseContent({ course, contents, className }) {
                                                                     />
                                                                     <EditIcon
                                                                         fontSize="x-small"
-                                                                        onClick={() => handleEditClick(child)}
+                                                                        onClick={() => handleEditContentClick(child)}
                                                                         className="absolute cursor-pointer right-6 top-1/2 transform -translate-y-1/2"
                                                                     />
                                                                     <DeleteIcon
@@ -386,6 +417,16 @@ export default function CourseContent({ course, contents, className }) {
                     </div>
                 </div>
             </div>
+            <Drawer show={editContentOpen} size={'lg'} onClose={() => setEditContentOpen(false)} title={'Edit Content'}>
+                <CourseContentEditForm
+                    courseContent={curEditContent}
+                    onSubmit={(data) => {
+                        handleUpdateContent(data.id, data.content_title, data.content_description, data.content_type, data.video);
+                        setEditContentOpen(false);
+                    }}
+                    onCancel={() => setEditContentOpen(false)}
+                />
+            </Drawer>
         </div>
     );
 }

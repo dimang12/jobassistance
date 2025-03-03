@@ -6,7 +6,11 @@ use App\Models\CourseContent;
 
 class CourseContentRepository
 {
-    public function getCourseContents()
+    /**
+     * Get all course contents
+     * @return mixed
+     */
+    public function getCourseContents(): mixed
     {
         // get course contents from course_contents table
         return CourseContent::leftJoin('course_content_playeds as ccp', 'course_contents.id', '=', 'ccp.course_content_id')
@@ -15,6 +19,26 @@ class CourseContentRepository
             ->get();
     }
 
+    /**
+     * Get all course contents by course id
+     * @param int $courseId
+     * @return mixed
+     */
+    public function getCourseContentsByCourseId(int $courseId): mixed
+    {
+        // get course contents from course_contents table by course id
+        return CourseContent::leftJoin('course_content_playeds as ccp', 'course_contents.id', '=', 'ccp.course_content_id')
+            ->select('course_contents.*', 'ccp.played_duration', 'ccp.is_completed')
+            ->where('course_id', $courseId)
+            ->orderBy('course_contents.ordering')
+            ->get();
+    }
+
+    /**
+     * Store a newly created course content in storage.
+     * @param array $data
+     * @return mixed
+     */
     public function store($data)
     {
         $courseContent = CourseContent::create($data);
