@@ -23,5 +23,6 @@ class CourseContent extends Model
         'ordering',
         'course_id',
         'parent_id',
+        'video_id',
     ];
 }
